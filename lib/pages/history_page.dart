@@ -31,20 +31,75 @@ class TransactionRecord {
 }
 
 // 模拟获取交易记录的函数 (Simulated function to fetch transaction records)
-Future<List<TransactionRecord>> fetchTransactionHistory(
-    String accountId, DateTime startDate, DateTime endDate) async {
+Future<List<TransactionRecord>> fetchTransactionHistory(String accountId, DateTime startDate, DateTime endDate) async {
   // 模拟网络延迟 (Simulate network delay)
   await Future.delayed(const Duration(seconds: 2));
 
   // 模拟基于日期过滤的数据 (Simulate data filtering based on date)
   List<TransactionRecord> allRecords = [
-    TransactionRecord(id: 'TXN001', dateTime: DateTime(2024, 5, 1, 10, 30), type: '买入', stockName: '腾讯控股', stockCode: '00700', price: 350.50, quantity: 100, amount: 35050.00),
-    TransactionRecord(id: 'TXN002', dateTime: DateTime(2024, 5, 3, 14, 15), type: '卖出', stockName: '阿里巴巴', stockCode: '09988', price: 85.20, quantity: 200, amount: 17040.00),
-    TransactionRecord(id: 'TXN003', dateTime: DateTime(2024, 5, 5, 9, 45), type: '买入', stockName: '平安银行', stockCode: '000001', price: 12.80, quantity: 500, amount: 6400.00),
-    TransactionRecord(id: 'TXN004', dateTime: DateTime(2024, 5, 10, 11, 00), type: '转入资金', stockName: '-', stockCode: '-', price: 0, quantity: 0, amount: 50000.00),
-    TransactionRecord(id: 'TXN005', dateTime: DateTime(2024, 5, 12, 13, 20), type: '买入', stockName: '贵州茅台', stockCode: '600519', price: 1700.00, quantity: 10, amount: 17000.00),
-    TransactionRecord(id: 'TXN006', dateTime: DateTime(2024, 5, 15, 10, 55), type: '卖出', stockName: '腾讯控股', stockCode: '00700', price: 355.00, quantity: 50, amount: 17750.00),
-     TransactionRecord(id: 'TXN007', dateTime: DateTime(2023, 4, 1, 10, 30), type: '买入', stockName: '旧记录', stockCode: 'OLD01', price: 10.50, quantity: 100, amount: 1050.00),
+    TransactionRecord(
+        id: 'TXN001',
+        dateTime: DateTime(2024, 5, 1, 10, 30),
+        type: '买入',
+        stockName: '腾讯控股',
+        stockCode: '00700',
+        price: 350.50,
+        quantity: 100,
+        amount: 35050.00),
+    TransactionRecord(
+        id: 'TXN002',
+        dateTime: DateTime(2024, 5, 3, 14, 15),
+        type: '卖出',
+        stockName: '阿里巴巴',
+        stockCode: '09988',
+        price: 85.20,
+        quantity: 200,
+        amount: 17040.00),
+    TransactionRecord(
+        id: 'TXN003',
+        dateTime: DateTime(2024, 5, 5, 9, 45),
+        type: '买入',
+        stockName: '平安银行',
+        stockCode: '000001',
+        price: 12.80,
+        quantity: 500,
+        amount: 6400.00),
+    TransactionRecord(
+        id: 'TXN004',
+        dateTime: DateTime(2024, 5, 10, 11, 00),
+        type: '转入资金',
+        stockName: '-',
+        stockCode: '-',
+        price: 0,
+        quantity: 0,
+        amount: 50000.00),
+    TransactionRecord(
+        id: 'TXN005',
+        dateTime: DateTime(2024, 5, 12, 13, 20),
+        type: '买入',
+        stockName: '贵州茅台',
+        stockCode: '600519',
+        price: 1700.00,
+        quantity: 10,
+        amount: 17000.00),
+    TransactionRecord(
+        id: 'TXN006',
+        dateTime: DateTime(2024, 5, 15, 10, 55),
+        type: '卖出',
+        stockName: '腾讯控股',
+        stockCode: '00700',
+        price: 355.00,
+        quantity: 50,
+        amount: 17750.00),
+    TransactionRecord(
+        id: 'TXN007',
+        dateTime: DateTime(2023, 4, 1, 10, 30),
+        type: '买入',
+        stockName: '旧记录',
+        stockCode: 'OLD01',
+        price: 10.50,
+        quantity: 100,
+        amount: 1050.00),
   ];
 
   // 根据账户和日期范围筛选 (Filter by account and date range)
@@ -54,7 +109,8 @@ Future<List<TransactionRecord>> fetchTransactionHistory(
     // bool matchesAccount = accountId == 'account1' ? record.id.contains(RegExp(r'[13579]$')) : record.id.contains(RegExp(r'[02468]$'));
     // 为了演示，这里不严格按 accountId 过滤，仅演示日期过滤
     final recordDate = record.dateTime;
-    return !recordDate.isBefore(startDate) && !recordDate.isAfter(endDate.add(const Duration(days: 1)).subtract(const Duration(microseconds: 1))); // 包含结束日期当天
+    return !recordDate.isBefore(startDate) &&
+        !recordDate.isAfter(endDate.add(const Duration(days: 1)).subtract(const Duration(microseconds: 1))); // 包含结束日期当天
   }).toList();
 }
 
@@ -67,7 +123,8 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   String? _selectedAccountId;
-  DateTime _startDate = DateTime.now().subtract(const Duration(days: 30)); // 默认开始日期：30天前 (Default start date: 30 days ago)
+  DateTime _startDate =
+      DateTime.now().subtract(const Duration(days: 30)); // 默认开始日期：30天前 (Default start date: 30 days ago)
   DateTime _endDate = DateTime.now(); // 默认结束日期：今天 (Default end date: today)
 
   List<TransactionRecord> _transactionRecords = [];
@@ -91,12 +148,14 @@ class _HistoryPageState extends State<HistoryPage> {
       setState(() {
         if (isStartDate) {
           _startDate = picked;
-          if (_startDate.isAfter(_endDate)) { // 如果开始日期晚于结束日期，则将结束日期设为开始日期 (If start date is after end date, set end date to start date)
+          if (_startDate.isAfter(_endDate)) {
+            // 如果开始日期晚于结束日期，则将结束日期设为开始日期 (If start date is after end date, set end date to start date)
             _endDate = _startDate;
           }
         } else {
           _endDate = picked;
-          if (_endDate.isBefore(_startDate)) { // 如果结束日期早于开始日期，则将开始日期设为结束日期 (If end date is before start date, set start date to end date)
+          if (_endDate.isBefore(_startDate)) {
+            // 如果结束日期早于开始日期，则将开始日期设为结束日期 (If end date is before start date, set start date to end date)
             _startDate = _endDate;
           }
         }
@@ -213,12 +272,11 @@ class _HistoryPageState extends State<HistoryPage> {
                       icon: const Icon(Icons.search),
                       label: const Text('查询'),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueGrey[700],
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12.0),
-                        textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))
-                      ),
+                          backgroundColor: Colors.blueGrey[700],
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12.0),
+                          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
                       onPressed: _isLoading || _selectedAccountId == null ? null : _queryHistory,
                     ),
                   ],
@@ -226,14 +284,22 @@ class _HistoryPageState extends State<HistoryPage> {
               ),
             ),
 
-
             // 结果显示区域 (Results Display Area)
             if (_isLoading)
               const Expanded(child: Center(child: CircularProgressIndicator()))
             else if (_error != null && _transactionRecords.isEmpty)
-              Expanded(child: Center(child: Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 16), textAlign: TextAlign.center,)))
+              Expanded(
+                  child: Center(
+                      child: Text(
+                _error!,
+                style: const TextStyle(color: Colors.red, fontSize: 16),
+                textAlign: TextAlign.center,
+              )))
             else if (_transactionRecords.isEmpty && _error == null)
-               Expanded(child: Center(child: Text(_selectedAccountId == null ? '请选择账户并设置日期范围后点击查询。' :'请点击查询按钮以加载数据。', style: TextStyle(fontSize: 16, color: Colors.grey[600]), textAlign: TextAlign.center)))
+              Expanded(
+                  child: Center(
+                      child: Text(_selectedAccountId == null ? '请选择账户并设置日期范围后点击查询。' : '请点击查询按钮以加载数据。',
+                          style: TextStyle(fontSize: 16, color: Colors.grey[600]), textAlign: TextAlign.center)))
             else
               Expanded(
                 child: ListView.builder(
@@ -246,30 +312,45 @@ class _HistoryPageState extends State<HistoryPage> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       child: ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: record.type.contains('买入') || record.type.contains('转入') ? Colors.green[100] : Colors.red[100],
+                          backgroundColor: record.type.contains('买入') || record.type.contains('转入')
+                              ? Colors.red[100]
+                              : Colors.green[100],
                           child: Icon(
-                            record.type.contains('买入') ? Icons.add_shopping_cart :
-                            record.type.contains('卖出') ? Icons.remove_shopping_cart :
-                            record.type.contains('转入') ? Icons.arrow_downward : Icons.arrow_upward,
-                            color: record.type.contains('买入') || record.type.contains('转入') ? Colors.green[700] : Colors.red[700],
+                            record.type.contains('买入')
+                                ? Icons.add_shopping_cart
+                                : record.type.contains('卖出')
+                                    ? Icons.remove_shopping_cart
+                                    : record.type.contains('转入')
+                                        ? Icons.arrow_downward
+                                        : Icons.arrow_upward,
+                            color: record.type.contains('买入') || record.type.contains('转入')
+                                ? Colors.red[700]
+                                : Colors.green[700],
                             size: 20,
                           ),
                         ),
-                        title: Text('${record.stockName} (${record.stockCode})', style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Text('${record.stockName} (${record.stockCode})',
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('类型: ${record.type} | 时间: ${_dateFormatter.format(record.dateTime)} ${DateFormat.Hm().format(record.dateTime)}'),
+                            Text(
+                                '类型: ${record.type} | 时间: ${_dateFormatter.format(record.dateTime)} ${DateFormat.Hm().format(record.dateTime)}'),
                             if (record.price > 0 && record.quantity > 0)
                               Text('价格: ${record.price.toStringAsFixed(2)} | 数量: ${record.quantity}'),
-                            Text('金额: ${record.amount.toStringAsFixed(2)}', style: TextStyle(fontWeight: FontWeight.w500, color: record.type.contains('买入') || record.type.contains('转出') ? Colors.redAccent : Colors.green)),
+                            Text('金额: ${record.amount.toStringAsFixed(2)}',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w500,
+                                    color: record.type.contains('买入') || record.type.contains('转出')
+                                        ? Colors.redAccent
+                                        : Colors.green)),
                           ],
                         ),
                         isThreeLine: record.price > 0 && record.quantity > 0,
                         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
                         onTap: () {
                           // 可以导航到交易详情页面 (Can navigate to transaction detail page)
-                           ScaffoldMessenger.of(context).showSnackBar(
+                          ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('点击了记录: ${record.id}')),
                           );
                         },
