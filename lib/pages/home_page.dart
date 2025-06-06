@@ -67,15 +67,12 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('账户信息查询'),
         backgroundColor: Colors.teal, // AppBar 背景色 (AppBar background color)
-        foregroundColor:
-            Colors
-                .white, // AppBar 前景色 (文字和图标颜色) (AppBar foreground color (text and icon color))
+        foregroundColor: Colors.white, // AppBar 前景色 (文字和图标颜色) (AppBar foreground color (text and icon color))
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.stretch, // 子组件宽度撑满 (Stretch children's width)
+          crossAxisAlignment: CrossAxisAlignment.stretch, // 子组件宽度撑满 (Stretch children's width)
           children: <Widget>[
             // 账户选择 (Account Selection)
             DropdownButtonFormField<String>(
@@ -92,20 +89,18 @@ class _HomePageState extends State<HomePage> {
               onChanged: (String? newValue) {
                 setState(() {
                   _selectedAccountId = newValue;
-                  _accountDetails =
-                      null; // 账户更改时重置详情 (Reset details when account changes)
+                  _accountDetails = null; // 账户更改时重置详情 (Reset details when account changes)
                   _error = null;
                 });
               },
-              items:
-                  _accounts.map<DropdownMenuItem<String>>((
-                    Map<String, String> account,
-                  ) {
-                    return DropdownMenuItem<String>(
-                      value: account['id'],
-                      child: Text(account['name']!),
-                    );
-                  }).toList(),
+              items: _accounts.map<DropdownMenuItem<String>>((
+                Map<String, String> account,
+              ) {
+                return DropdownMenuItem<String>(
+                  value: account['id'],
+                  child: Text(account['name']!),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 20),
 
@@ -120,21 +115,19 @@ class _HomePageState extends State<HomePage> {
                   borderRadius: BorderRadius.circular(8.0),
                 ),
               ),
-              onPressed:
-                  _selectedAccountId == null || _isLoading
-                      ? null
-                      : _queryAccountData, // 如果没有选择账户或正在加载，则禁用按钮 (Disable button if no account is selected or if loading)
-              child:
-                  _isLoading
-                      ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          color: Colors.white,
-                        ), // 加载指示器 (Loading indicator)
-                      )
-                      : const Text('提交查询'),
+              onPressed: _selectedAccountId == null || _isLoading
+                  ? null
+                  : _queryAccountData, // 如果没有选择账户或正在加载，则禁用按钮 (Disable button if no account is selected or if loading)
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 3,
+                        color: Colors.white,
+                      ), // 加载指示器 (Loading indicator)
+                    )
+                  : const Text('提交查询'),
             ),
             const SizedBox(height: 20),
 
@@ -152,8 +145,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
 
-            if (_accountDetails !=
-                null) // 如果账户详情不为空 (If account details are not null)
+            if (_accountDetails != null) // 如果账户详情不为空 (If account details are not null)
               Expanded(
                 child: SingleChildScrollView(
                   // 使内容可滚动 (Make content scrollable)
@@ -186,15 +178,15 @@ class _HomePageState extends State<HomePage> {
                           ),
                           const Divider(), // 分割线 (Divider line)
                           _buildStockTable(_accountDetails!.stocks),
+                          const Divider(), // 分割线 (Divider line)
+                          _buildStockCard(_accountDetails!.stocks), // 股票卡片 (Stock card)
                         ],
                       ),
                     ),
                   ),
                 ),
               )
-            else if (!_isLoading &&
-                _error ==
-                    null) // 如果没有加载且没有错误，显示提示信息 (If not loading and no error, show prompt)
+            else if (!_isLoading && _error == null) // 如果没有加载且没有错误，显示提示信息 (If not loading and no error, show prompt)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(20.0),
@@ -268,32 +260,69 @@ class _HomePageState extends State<HomePage> {
           DataColumn(label: Text('当前价')),
           DataColumn(label: Text('浮动盈亏')),
         ],
-        rows:
-            stocks.map((stock) {
-              return DataRow(
-                cells: [
-                  DataCell(Text(stock.code)),
-                  DataCell(Text(stock.name)),
-                  DataCell(Text(stock.holdings.toString())),
-                  DataCell(Text(stock.available.toString())),
-                  DataCell(Text(stock.costPrice.toStringAsFixed(2))),
-                  DataCell(Text(stock.currentPrice.toStringAsFixed(2))),
-                  DataCell(
-                    Text(
-                      stock.profitLoss.toStringAsFixed(2),
-                      style: TextStyle(
-                        color:
-                            stock.profitLoss >= 0
-                                ? Colors.green
-                                : Colors
-                                    .red, // 根据盈亏显示不同颜色 (Display different colors based on profit/loss)
-                      ),
-                    ),
+        rows: stocks.map((stock) {
+          return DataRow(
+            cells: [
+              DataCell(Text(stock.code)),
+              DataCell(Text(stock.name)),
+              DataCell(Text(stock.holdings.toString())),
+              DataCell(Text(stock.available.toString())),
+              DataCell(Text(stock.costPrice.toStringAsFixed(2))),
+              DataCell(Text(stock.currentPrice.toStringAsFixed(2))),
+              DataCell(
+                Text(
+                  stock.profitLoss.toStringAsFixed(2),
+                  style: TextStyle(
+                    color: stock.profitLoss >= 0
+                        ? Colors.green
+                        : Colors.red, // 根据盈亏显示不同颜色 (Display different colors based on profit/loss)
                   ),
-                ],
-              );
-            }).toList(),
+                ),
+              ),
+            ],
+          );
+        }).toList(),
       ),
+    );
+  }
+
+  Widget _buildStockCard(List<StockInfo> stocks) {
+    if (stocks.isEmpty) {
+      return const Text('暂无股票数据');
+    }
+    return ListView.builder(
+      shrinkWrap: true, // 根据内容调整高度
+      physics: const NeverScrollableScrollPhysics(), // 禁用ListView自身的滚动
+      itemCount: stocks.length,
+      itemBuilder: (context, index) {
+        final record = stocks[index];
+        return Card(
+          margin: const EdgeInsets.symmetric(vertical: 6.0),
+          elevation: 1.5,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          child: ListTile(
+            title: Text('${record.name} (${record.code})', style: const TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('参考持股: ${record.holdings.toString()} | 可用股份: ${record.available.toString()}'),
+                Text('成本价: ${record.costPrice.toStringAsFixed(3)} | 当前价: ${record.currentPrice.toStringAsFixed(3)}'),
+                Text('浮动盈亏: ${record.profitLoss.toStringAsFixed(2)}',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500, color: record.profitLoss >= 0 ? Colors.redAccent : Colors.green)),
+              ],
+            ),
+            // isThreeLine: record.price > 0 && record.quantity > 0,
+            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+            onTap: () {
+              // 可以导航到交易详情页面 (Can navigate to transaction detail page)
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('点击了记录: ${record.code}')),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

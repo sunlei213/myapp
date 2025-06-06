@@ -1,4 +1,3 @@
-
 import 'package:myapp/models/account.dart';
 import 'package:myapp/models/trade_record.dart';
 import 'package:myapp/models/stock_info.dart';
@@ -25,7 +24,7 @@ class StockApi {
             available: 90,
             costPrice: 150.0,
             currentPrice: 170.0,
-            profitLoss: 2000.0,
+            profitLoss: -2000.0,
           ),
           StockInfo(
             code: 'GOOG',
@@ -60,19 +59,42 @@ class StockApi {
     }
   }
 
-  Future<bool> submitTradeOrder({required String accountId, required String stockCode, required String market, required int quantity, required double price, required String type}) async {
+  Future<bool> submitTradeOrder(
+      {required String accountId,
+      required String stockCode,
+      required String market,
+      required int quantity,
+      required double price,
+      required String type}) async {
     // Placeholder for submitting trade order
     await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
     return true; // Assume success for now
   }
 
-  Future<List<TradeRecord>> fetchTradeHistory({required String accountId, required DateTime startDate, required DateTime endDate}) async {
+  Future<List<TradeRecord>> fetchTradeHistory(
+      {required String accountId, required DateTime startDate, required DateTime endDate}) async {
     // Placeholder for fetching trade history
     await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
     return [
       // Dummy trade records
-      TradeRecord(id: '1', account: accountId, code: 'AAPL', name: 'Apple Inc.', type: 'buy', quantity: 10, price: 160.0, time: DateTime.now().subtract(const Duration(days: 1))),
-      TradeRecord(id: '2', account: accountId, code: 'GOOG', name: 'Alphabet Inc.', type: 'sell', quantity: 5, price: 2550.0, time: DateTime.now().subtract(const Duration(days: 2))),
+      TradeRecord(
+          id: '1',
+          account: accountId,
+          code: 'AAPL',
+          name: 'Apple Inc.',
+          type: 'buy',
+          quantity: 10,
+          price: 160.0,
+          time: DateTime.now().subtract(const Duration(days: 1))),
+      TradeRecord(
+          id: '2',
+          account: accountId,
+          code: 'GOOG',
+          name: 'Alphabet Inc.',
+          type: 'sell',
+          quantity: 5,
+          price: 2550.0,
+          time: DateTime.now().subtract(const Duration(days: 2))),
     ];
   }
 }
