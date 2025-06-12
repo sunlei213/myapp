@@ -1,12 +1,32 @@
 import 'package:myapp/models/account.dart';
 import 'package:myapp/models/trade_record.dart';
 import 'package:myapp/models/stock_info.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/material.dart';
 
 class StockApi {
-  final String baseUrl;
-  final String apiKey;
+  // 2. 将变量改为私有，使用 _ 前缀
+  String _baseUrl;
+  String _apiKey;
 
-  StockApi({required this.baseUrl, required this.apiKey});
+  // 构造函数现在接收初始值并赋给私有变量
+  StockApi({required String baseUrl, required String apiKey})
+      : _baseUrl = baseUrl,
+        _apiKey = apiKey;
+
+  // 暴露公共的 getter 来获取值
+  String get baseUrl => _baseUrl;
+  String get apiKey => _apiKey;
+
+  // 3. 正确的 setter 实现，将新值赋给私有变量
+  set baseUrl(String newBaseUrl) {
+    _baseUrl = newBaseUrl;
+  }
+
+  set apiKey(String newApiKey) {
+    _apiKey = newApiKey;
+  }
 
   Future<Account?> fetchAccountInfo(String accountId) async {
     // Placeholder for fetching account info
@@ -96,6 +116,26 @@ class StockApi {
           price: 2550.0,
           time: DateTime.now().subtract(const Duration(days: 2))),
     ];
+  }
+
+  Future<List<Map<String, String>>> fetchOption() async {
+    final url = Uri.parse('$_baseUrl/form/options');
+    try {
+      final response = await http.get(url, headers: {'X-API-Key': _apiKey});
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        var list = data['users'] as List;
+        List<Map<String, String>> userList = list.map((i) {
+          return {'id': i['value'].toString(), 'name': i['label'].toString()};
+        }).toList();
+        return userList;
+      } else {
+        throw Exception('Failed to load account info');
+      }
+    } catch (e) {
+      throw Exception('获取错误信息: $e');
+    }
   }
 }
 /*

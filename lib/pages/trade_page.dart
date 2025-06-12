@@ -46,7 +46,8 @@ class _TradePageState extends State<TradePage> {
   }
 
   Future<void> _submitTrade() async {
-    if (_formKey.currentState!.validate()) { // 触发表单验证 (Trigger form validation)
+    if (_formKey.currentState!.validate()) {
+      // 触发表单验证 (Trigger form validation)
       _formKey.currentState!.save(); // 保存表单数据 (Save form data)
 
       setState(() {
@@ -79,21 +80,20 @@ class _TradePageState extends State<TradePage> {
       }
 
       String message = '账户: ${_accounts.firstWhere((acc) => acc['id'] == _selectedAccountId)['name']}\n'
-                       '操作: $actionText\n';
+          '操作: $actionText\n';
 
       if (_selectedAction == TradeAction.buy || _selectedAction == TradeAction.sell) {
         message += '市场: ${_markets.firstWhere((m) => m['id'] == _selectedMarketId)['name']}\n'
-                   '股票代码: ${_stockCodeController.text}\n'
-                   '委托价格: ${_priceController.text}\n'
-                   '委托数量: ${_quantityController.text}';
+            '股票代码: ${_stockCodeController.text}\n'
+            '委托价格: ${_priceController.text}\n'
+            '委托数量: ${_quantityController.text}';
       } else if (_selectedAction == TradeAction.cancel) {
         // 撤单可能需要订单号，这里简化处理 (Cancel might need order ID, simplified here)
         message += '股票代码 (用于定位订单): ${_stockCodeController.text}';
       } else if (_selectedAction == TradeAction.query) {
         // 查询也可能需要更多参数 (Query might also need more parameters)
-         message += '查询条件 (如股票代码): ${_stockCodeController.text}';
+        message += '查询条件 (如股票代码): ${_stockCodeController.text}';
       }
-
 
       // 显示一个简单的对话框或 SnackBar (Show a simple dialog or SnackBar)
       ScaffoldMessenger.of(context).showSnackBar(
@@ -120,13 +120,17 @@ class _TradePageState extends State<TradePage> {
   bool _showPriceAndQuantityFields() {
     return _selectedAction == TradeAction.buy || _selectedAction == TradeAction.sell;
   }
+
   bool _showStockCodeField() {
-    return _selectedAction == TradeAction.buy || _selectedAction == TradeAction.sell || _selectedAction == TradeAction.cancel || _selectedAction == TradeAction.query;
-  }
-  bool _showMarketField() {
-     return _selectedAction == TradeAction.buy || _selectedAction == TradeAction.sell;
+    return _selectedAction == TradeAction.buy ||
+        _selectedAction == TradeAction.sell ||
+        _selectedAction == TradeAction.cancel ||
+        _selectedAction == TradeAction.query;
   }
 
+  bool _showMarketField() {
+    return _selectedAction == TradeAction.buy || _selectedAction == TradeAction.sell;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +144,8 @@ class _TradePageState extends State<TradePage> {
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
-          child: SingleChildScrollView( // 允许内容滚动 (Allow content to scroll)
+          child: SingleChildScrollView(
+            // 允许内容滚动 (Allow content to scroll)
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
@@ -167,10 +172,14 @@ class _TradePageState extends State<TradePage> {
                 // 2. 操作选择 (Action Selection - Buy, Sell, Cancel, Query)
                 SegmentedButton<TradeAction>(
                   segments: const <ButtonSegment<TradeAction>>[
-                    ButtonSegment<TradeAction>(value: TradeAction.buy, label: Text('买入'), icon: Icon(Icons.add_shopping_cart)),
-                    ButtonSegment<TradeAction>(value: TradeAction.sell, label: Text('卖出'), icon: Icon(Icons.sell_outlined)),
-                    ButtonSegment<TradeAction>(value: TradeAction.cancel, label: Text('撤单'), icon: Icon(Icons.cancel_schedule_send_outlined)),
-                    ButtonSegment<TradeAction>(value: TradeAction.query, label: Text('查询'), icon: Icon(Icons.find_in_page_outlined)),
+                    ButtonSegment<TradeAction>(
+                        value: TradeAction.buy, label: Text('买入'), icon: Icon(Icons.add_shopping_cart)),
+                    ButtonSegment<TradeAction>(
+                        value: TradeAction.sell, label: Text('卖出'), icon: Icon(Icons.sell_outlined)),
+                    ButtonSegment<TradeAction>(
+                        value: TradeAction.cancel, label: Text('撤单'), icon: Icon(Icons.cancel_schedule_send_outlined)),
+                    ButtonSegment<TradeAction>(
+                        value: TradeAction.query, label: Text('查询'), icon: Icon(Icons.find_in_page_outlined)),
                   ],
                   selected: {_selectedAction},
                   onSelectionChanged: (Set<TradeAction> newSelection) {
@@ -195,9 +204,8 @@ class _TradePageState extends State<TradePage> {
                 ),
                 const SizedBox(height: 20),
 
-
                 // 3. 股票代码 (Stock Code Input)
-                if(_showStockCodeField())
+                if (_showStockCodeField())
                   TextFormField(
                     controller: _stockCodeController,
                     decoration: _inputDecoration('股票代码', prefixIcon: Icons.bar_chart),
@@ -210,7 +218,7 @@ class _TradePageState extends State<TradePage> {
                       return null;
                     },
                   ),
-                if(_showStockCodeField()) const SizedBox(height: 16),
+                if (_showStockCodeField()) const SizedBox(height: 16),
 
                 // 4. 选择市场 (Market Selection)
                 if (_showMarketField())
@@ -237,7 +245,6 @@ class _TradePageState extends State<TradePage> {
                     },
                   ),
                 if (_showMarketField()) const SizedBox(height: 16),
-
 
                 // 5. 委托价格 (Order Price Input)
                 if (_showPriceAndQuantityFields())
@@ -268,7 +275,7 @@ class _TradePageState extends State<TradePage> {
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.done, // 表单的最后一个输入 (Last input in the form)
                     validator: (value) {
-                       if (_showPriceAndQuantityFields()) {
+                      if (_showPriceAndQuantityFields()) {
                         if (value == null || value.isEmpty) {
                           return '请输入委托数量';
                         }
@@ -281,18 +288,14 @@ class _TradePageState extends State<TradePage> {
                   ),
                 if (_showPriceAndQuantityFields()) const SizedBox(height: 24),
 
-
                 // 7. 提交按钮 (Submit Button)
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.deepPurple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
-                    textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0)
-                    )
-                  ),
+                      backgroundColor: Colors.deepPurple,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 12.0),
+                      textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0))),
                   onPressed: _isLoading ? null : _submitTrade, // 正在加载时禁用 (Disable when loading)
                   child: _isLoading
                       ? const SizedBox(
@@ -321,8 +324,6 @@ class _TradePageState extends State<TradePage> {
         return '提交撤单';
       case TradeAction.query:
         return '查询';
-      default:
-        return '提交';
     }
   }
 

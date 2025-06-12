@@ -1,9 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'themes/app_theme.dart';
 import 'pages/main_page.dart';
+import 'api/user_service.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
+// 创建 GetIt 实例
+final GetIt getIt = GetIt.instance;
+
+void setupLocator() {
+  // 注册 UserService 为单例
+  // LazySingleton 表示只有在第一次请求时才创建实例
+  getIt.registerLazySingleton<UserService>(() => UserService());
+  // 或者
+  // getIt.registerSingleton<UserService>(UserService._internal()); // 立即创建实例
+  debugPrint('GetIt 服务定位器已设置完成。');
+}
+
 void main() {
+  setupLocator();
   runApp(const MyApp());
 }
 

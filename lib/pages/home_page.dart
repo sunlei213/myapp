@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:myapp/api/stock_api.dart';
 import 'package:myapp/models/account.dart';
 import 'package:myapp/models/stock_info.dart';
+import 'package:myapp/main.dart';
+import 'package:myapp/api/user_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -15,16 +17,25 @@ class _HomePageState extends State<HomePage> {
   Account? _accountDetails; // 获取到的账户详情 (Fetched account details)
   bool _isLoading = false; // 是否正在加载数据 (Whether data is being loaded)
   String? _error; // 错误信息 (Error message)
-  final StockApi _stockApi = StockApi(
-    baseUrl: 'https://192',
-    apiKey: 'test',
-  ); // 股票API实例 (Stock API instance)
+  final UserService _userService = getIt<UserService>();
+  late StockApi _stockApi; // 股票API实例 (Stock API instance)
 
   // 可选账户列表 (List of available accounts)
   final List<Map<String, String>> _accounts = [
     {'id': 'account1', 'name': '账户一'},
     {'id': 'account2', 'name': '账户二'},
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _stockApi = _userService.currentApi; // 获取当前API实例 (Get current API instance)
+    setState(() {
+      _accounts.clear(); // 初始数据 (Initial data)
+      _accounts.addAll(_userService.accounts); // 初始数据 (Initial data)
+      _selectedAccountId = _userService.currentAccount; // 初始数据 (Initial data)
+    });
+  }
 
   // 查询账户数据的方法 (Method to query account data)
   Future<void> _queryAccountData() async {

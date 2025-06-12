@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/api/user_service.dart';
+import 'package:myapp/main.dart';
 import 'package:myapp/pages/home_page.dart';
 import 'package:myapp/pages/trade_page.dart';
 import 'package:myapp/pages/history_page.dart';
@@ -13,6 +15,7 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
+  final UserService _userService = getIt<UserService>();
 
   final List<Widget> _pages = [
     const HomePage(),
@@ -25,6 +28,17 @@ class _MainPageState extends State<MainPage> {
     setState(() {
       _selectedIndex = index;
     });
+  }
+
+  Future<void> _loadSettings() async {
+    await _userService.loadSettings(); // 确保加载设置完成
+    setState(() {}); // 刷新界面
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
   }
 
   @override
