@@ -4,6 +4,7 @@ import 'package:myapp/models/account.dart';
 import 'package:myapp/models/stock_info.dart';
 import 'package:myapp/main.dart';
 import 'package:myapp/api/user_service.dart';
+import 'package:myapp/pages/trade_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -183,8 +184,16 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           _buildInfoRow('姓名:', _accountDetails!.name),
                           _buildInfoRow(
-                            '资金金额:',
-                            '¥${_accountDetails!.balance.toStringAsFixed(2)}',
+                            '可用余额（元）:',
+                            '¥${_accountDetails!.usedmoney.toStringAsFixed(2)}',
+                          ),
+                          _buildInfoRow(
+                            '持仓市值（元）:',
+                            '¥${_accountDetails!.stocksvalue.toStringAsFixed(2)}',
+                          ),
+                          _buildInfoRow(
+                            '总资产（元）:',
+                            '¥${_accountDetails!.totlemoney.toStringAsFixed(2)}',
                           ),
                           const SizedBox(height: 15),
                           const Text(
@@ -326,18 +335,27 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text('参考持股: ${record.holdings.toString()} | 可用股份: ${record.available.toString()}'),
                 Text('成本价: ${record.costPrice.toStringAsFixed(3)} | 当前价: ${record.currentPrice.toStringAsFixed(3)}'),
-                Text('浮动盈亏: ${record.profitLoss.toStringAsFixed(2)} | 浮动盈亏(%): ${record.profitLoss.toStringAsFixed(3)}',
+                Text('浮动盈亏: ${record.profitLoss.toStringAsFixed(2)} | 浮动盈亏(%): ${record.lossPercent.toStringAsFixed(3)}',
                     style: TextStyle(
                         fontWeight: FontWeight.w500, color: record.profitLoss >= 0 ? Colors.redAccent : Colors.green)),
-                Text('冻结持股: ${record.holdings.toString()} | 在途股份: ${record.available.toString()}'),
+                Text('冻结持股: ${record.lockedamount.toString()} | 在途股份: ${record.buyamount.toString()}'),
               ],
             ),
             // isThreeLine: record.price > 0 && record.quantity > 0,
             trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
             onTap: () {
-              // 可以导航到交易详情页面 (Can navigate to transaction detail page)
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('点击了记录: ${record.code}')),
+              // 点击记录时导航到交易页面，并传递相关数据
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => TradePage(
+                    initialStockCode: record.code, // 股票代码
+                    initialQuantity: record.available.toString(), // 可用股份
+                    initialPrice: record.currentPrice.toStringAsFixed(3), // 当前价格 (格式化为2位小数)
+                    initialAccountId: _selectedAccountId, // 当前选择的账户ID
+                    initialAction: TradeAction.sell, // 默认设置为“卖出”操作
+                  ),
+                ),
               );
             },
           ),

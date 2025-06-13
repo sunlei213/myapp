@@ -2,7 +2,7 @@ import 'package:myapp/models/account.dart';
 import 'package:myapp/models/trade_record.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:flutter/material.dart';
+
 
 class StockApi {
   // 2. 将变量改为私有，使用 _ 前缀
@@ -44,68 +44,44 @@ class StockApi {
     }
   }
 
-/*
-  Future<Account?> fetchAccountInfo(String accountId) async {
-    // Placeholder for fetching account info
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    if (accountId == 'account1') {
-      return Account(
-        userid: 536,
-        name: 'Account One',
-        balance: 100000.0,
-        stocks: [
-          StockInfo(
-            code: 'AAPL',
-            name: 'Apple Inc.',
-            holdings: 100,
-            available: 90,
-            costPrice: 150.0,
-            currentPrice: 170.0,
-            profitLoss: -2000.0,
-          ),
-          StockInfo(
-            code: 'GOOG',
-            name: 'Alphabet Inc.',
-            holdings: 50,
-            available: 45,
-            costPrice: 2500.0,
-            currentPrice: 2600.0,
-            profitLoss: 5000.0,
-          ),
-        ],
-      );
-    } else if (accountId == 'account2') {
-      return Account(
-        id: 'account2',
-        name: 'Account Two',
-        balance: 50000.0,
-        stocks: [
-          StockInfo(
-            code: 'MSFT',
-            name: 'Microsoft Corporation',
-            holdings: 200,
-            available: 180,
-            costPrice: 280.0,
-            currentPrice: 300.0,
-            profitLoss: 4000.0,
-          ),
-        ],
-      );
+  Future<bool> submitCommand(
+      {required String accountId,
+      required String type}) async {
+    // Placeholder for submitting trade order
+    final url = Uri.parse('$_baseUrl/command/$accountId');
+    final response = await http.post(url,
+        headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
+        body: jsonEncode({'type': type}));
+    if (response.statusCode == 200) {
+      return true;
     } else {
-      return null;
+      throw Exception('Failed to submit command');
     }
-  }*/
+  }
 
   Future<bool> submitTradeOrder(
       {required String accountId,
       required String stockCode,
       required String market,
-      required int quantity,
+      required int volume,
       required double price,
       required String type}) async {
     // Placeholder for submitting trade order
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    return true; // Assume success for now
+    final url = Uri.parse('$_baseUrl/place_order/$accountId');
+    final response = await http.post(url,
+        headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'code': stockCode,
+          'market': market,
+          'volume': volume,
+          'price': price,
+          'type': type
+        }));
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      throw Exception('Failed to submit trade order');
+    }
   }
 
   Future<List<TradeRecord>> fetchTradeHistory(

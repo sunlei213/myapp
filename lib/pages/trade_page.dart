@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:myapp/api/stock_api.dart';
+import 'package:myapp/api/user_service.dart';
+import 'package:myapp/main.dart';
 
 // 定义委托操作类型 (Define order action types)
 enum TradeAction { buy, sell, cancel, query }
@@ -9,14 +12,22 @@ final List<Map<String, String>> _markets = [
   {'id': 'sz', 'name': '深圳 (Shenzhen)'},
 ];
 
-// 模拟账户数据 (Simulated account data)
-final List<Map<String, String>> _accounts = [
-  {'id': 'account1', 'name': '账户一 (0012345678)'},
-  {'id': 'account2', 'name': '账户二 (0087654321)'},
-];
-
 class TradePage extends StatefulWidget {
-  const TradePage({super.key});
+  final String? initialStockCode; // 注意这里的 `?` 表示可空
+  final String? initialQuantity;
+  final String? initialPrice;
+  final String? initialAccountId;
+  final TradeAction initialAction; // 这个在构造函数里也有默认值
+
+
+  const TradePage({
+    super.key,
+    this.initialStockCode, // 这些参数都是可选的
+    this.initialQuantity,
+    this.initialPrice,
+    this.initialAccountId,
+    this.initialAction = TradeAction.buy, // 提供了默认值
+  });
 
   @override
   State<TradePage> createState() => _TradePageState();
@@ -24,10 +35,12 @@ class TradePage extends StatefulWidget {
 
 class _TradePageState extends State<TradePage> {
   final _formKey = GlobalKey<FormState>(); // 用于表单验证 (For form validation)
-
+  late StockApi _stockApi; // 股票API实例 (Stock API instance)
+  final UserService _userService = getIt<UserService>();
   String? _selectedAccountId; // 选择的账户ID (Selected account ID)
   String? _selectedMarketId; // 选择的市场ID (Selected market ID)
   TradeAction _selectedAction = TradeAction.buy; // 默认选择买入 (Default to Buy)
+  final List<Map<String, String>> _accounts = []; // 账户列表 (Account list)
 
   // TextEditingControllers 用于获取输入框的值 (TextEditingControllers to get input values)
   final TextEditingController _stockCodeController = TextEditingController();
@@ -37,12 +50,78 @@ class _TradePageState extends State<TradePage> {
   bool _isLoading = false; // 处理提交状态 (Handle submission state)
 
   @override
+  void initState() {
+    super.initState();
+    setState(() {
+      _accounts.clear(); // 初始数据 (Initial data)
+      _accounts.addAll(_userService.accounts); // 初始数据 (Initial data)
+      _stockApi = _userService.currentApi; // 获取当前API实例 (Get current API instance)
+      _selectedAction = widget.initialAction; // 如果没传，就是默认的 TradeAction.buy
+      _stockCodeController.text = widget.initialStockCode ?? ''; // 如果没传，就是空字符串
+      _quantityController.text = widget.initialQuantity ?? '';
+      _priceController.text = widget.initialPrice ?? '';
+      _selectedAccountId = widget.initialAccountId; // 如果没传，就是 null
+    });
+      // 监听 UserService 的变化
+    _userService.addListener(_onUserServiceChange);
+
+  }
+
+  @override
   void dispose() {
     // 清理 controllers (Clean up controllers)
     _stockCodeController.dispose();
     _quantityController.dispose();
     _priceController.dispose();
+    _userService.removeListener(_onUserServiceChange);
     super.dispose();
+  }
+
+  // UserService 变化时的回调 (Callback when UserService changes)
+  void _onUserServiceChange() {
+    // 当 UserService 中的数据发生变化时，更新UI
+    setState(() {
+      _accounts.clear(); // 初始数据 (Initial data)
+      _accounts.addAll(_userService.accounts); // 初始数据 (Initial data)
+      _selectedAccountId = _userService.currentAccount; // 初始数据 (Initial data)
+    });
+  }
+
+  Future<void> _fetchCommand(String actionCmd) async {
+    if (_selectedAccountId != null) {
+      try {
+        await _stockApi.submitCommand(accountId: _selectedAccountId!, type: actionCmd);
+      } catch (e) {
+        // 处理异常 (Handle exception)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('提交命令失败: $e', style: const TextStyle(fontSize: 12)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchOrder(String actionCmd) async {
+    if (_selectedAccountId != null) {
+      // 检查是否需要补充参数 (Check if additional parameters are needed)
+       try {
+        final stockCode = _stockCodeController.text;
+        final quantity = int.tryParse(_quantityController.text) ?? 0;
+        final price = double.tryParse(_priceController.text) ?? 0.0;
+        final market = _selectedMarketId;
+        await _stockApi.submitTradeOrder(accountId: _selectedAccountId!, stockCode: stockCode, market: market!, volume: quantity, price: price, type: actionCmd);
+      } catch (e) {
+        // 处理异常 (Handle exception)
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('提交命令失败: $e', style: const TextStyle(fontSize: 12)),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _submitTrade() async {
@@ -55,7 +134,25 @@ class _TradePageState extends State<TradePage> {
       });
 
       // --- 模拟网络请求或处理 ---
-      await Future.delayed(const Duration(seconds: 1));
+      String actionText = '';
+      switch (_selectedAction) {
+        case TradeAction.buy:
+          actionText = '买入';
+          await _fetchOrder('BUY');
+          break;
+        case TradeAction.sell:
+          actionText = '卖出';
+          await _fetchOrder('SELL');
+          break;
+        case TradeAction.cancel:
+          actionText = '撤单';
+          await _fetchCommand('CANCEL');
+          break;
+        case TradeAction.query:
+          actionText = '查询委托';
+          await _fetchCommand('QUERY');
+          break;
+      }
       // --- 模拟结束 ---
 
       setState(() {
@@ -63,21 +160,7 @@ class _TradePageState extends State<TradePage> {
       });
 
       // 构建提交信息 (Construct submission information)
-      String actionText = '';
-      switch (_selectedAction) {
-        case TradeAction.buy:
-          actionText = '买入';
-          break;
-        case TradeAction.sell:
-          actionText = '卖出';
-          break;
-        case TradeAction.cancel:
-          actionText = '撤单';
-          break;
-        case TradeAction.query:
-          actionText = '查询委托';
-          break;
-      }
+
 
       String message = '账户: ${_accounts.firstWhere((acc) => acc['id'] == _selectedAccountId)['name']}\n'
           '操作: $actionText\n';
@@ -89,10 +172,10 @@ class _TradePageState extends State<TradePage> {
             '委托数量: ${_quantityController.text}';
       } else if (_selectedAction == TradeAction.cancel) {
         // 撤单可能需要订单号，这里简化处理 (Cancel might need order ID, simplified here)
-        message += '股票代码 (用于定位订单): ${_stockCodeController.text}';
+        message += '发送全部撤单';
       } else if (_selectedAction == TradeAction.query) {
         // 查询也可能需要更多参数 (Query might also need more parameters)
-        message += '查询条件 (如股票代码): ${_stockCodeController.text}';
+        message += '发送查询';
       }
 
       // 显示一个简单的对话框或 SnackBar (Show a simple dialog or SnackBar)
@@ -123,9 +206,7 @@ class _TradePageState extends State<TradePage> {
 
   bool _showStockCodeField() {
     return _selectedAction == TradeAction.buy ||
-        _selectedAction == TradeAction.sell ||
-        _selectedAction == TradeAction.cancel ||
-        _selectedAction == TradeAction.query;
+        _selectedAction == TradeAction.sell;
   }
 
   bool _showMarketField() {
@@ -162,7 +243,9 @@ class _TradePageState extends State<TradePage> {
                   }).toList(),
                   onChanged: (value) {
                     setState(() {
-                      _selectedAccountId = value;
+                      if (value != null) {
+                        _userService.currentAccount = value;
+                      }
                     });
                   },
                   validator: (value) => value == null ? '请选择一个账户' : null,
