@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import 'stock_api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class UserService {
+class UserService extends ChangeNotifier {
   late StockApi _currentApi; // 使用 late 关键字，因为在构造函数中初始化
-  final List<Map<String, String>> _accounts = [
-    {'id': '537', 'name': '主账号'},
-    {'id': '536', 'name': '账户二'},
-  ];
-  String _currentAccount = '537'; // 假设默认选择第一个账户
+  final List<Map<String, String>> _accounts = [];
+  String _currentAccount = ''; // 假设默认选择第一个账户
   // 私有构造函数，防止直接实例化
   // 1. 保留私有构造函数，防止外部直接创建
   UserService._internal() {
@@ -32,6 +29,7 @@ class UserService {
   set currentAccount(String newAccount) {
     _currentAccount = newAccount; // 更新当前账户
     debugPrint('当前账户已更新为: $_currentAccount'); // 调试信息
+    notifyListeners(); // 通知监听者更新
   }
 
   List<Map<String, String>> get accounts => _accounts;
@@ -39,13 +37,27 @@ class UserService {
   void updateAccounts(List<Map<String, String>> newAccounts) {
     _accounts.clear(); // 清空现有数据
     _accounts.addAll(newAccounts); // 添加新数据
-    debugPrint('账户列表已更新: $_accounts'); // 调试信息
+    if (_accounts.isNotEmpty && !_accounts.any((acc) => acc['id'] == _currentAccount)) {
+      // 如果当前账户不存在新列表里，则默认选第一个
+      _currentAccount = _accounts[0]['id'] ?? '';
+    } else if (_accounts.isEmpty) {
+      _currentAccount = ''; // 如果账户列表为空，当前账户也清空
+    }
+    debugPrint('账户列表已更新: $_accounts');
+    notifyListeners(); // 通知监听者更新
   }
 
   set accounts(List<Map<String, String>> newAccounts) {
     _accounts.clear(); // 清空现有数据
     _accounts.addAll(newAccounts); // 添加新数据
+    if (_accounts.isNotEmpty && !_accounts.any((acc) => acc['id'] == _currentAccount)) {
+      // 如果当前账户不存在新列表里，则默认选第一个
+      _currentAccount = _accounts[0]['id'] ?? '';
+    } else if (_accounts.isEmpty) {
+      _currentAccount = ''; // 如果账户列表为空，当前账户也清空
+    }
     debugPrint('账户列表已更新: $_accounts');
+    notifyListeners(); // 通知监听者更新
   }
 
   // 从 SharedPreferences 加载设置
@@ -55,9 +67,27 @@ class UserService {
     final apiKey = prefs.getString('apiKey') ?? '123456'; // 从 SharedPreferences 加载 apiKey
     updateApiConfig(baseUrl, apiKey); // 更新当前 API 配置
     // 加载账户列表
-    final accountList = await _currentApi.fetchOption(); // 从服务器加载账户列表
-    updateAccounts(accountList); // 更新当前账户列表
-    _currentAccount = accountList[0]['id'] ?? ''; // 假设默认选择第一个账户;
+    // 只有当 baseUrl 不为空时才尝试从服务器获取选项
+    if (baseUrl.isNotEmpty) {
+      try {
+        debugPrint('Attempting to fetch options from: $baseUrl/form/options');
+        final accountList = await _currentApi.fetchOption(); // 从服务器加载账户列表
+        updateAccounts(accountList); // 更新当前账户列表
+      } catch (e) {
+        debugPrint('Error fetching options during loadSettings: $e');
+        // 如果获取失败，清空账户列表并重置当前账户，防止使用无效数据
+        _accounts.clear();
+        _currentAccount = '';
+        notifyListeners(); // 通知UI，加载失败，账户列表为空
+        // 你可能还希望通过某种方式向用户显示此错误，例如使用 Snackbar
+      }
+    } else {
+      debugPrint('Base URL is empty. Skipping fetchOption during loadSettings.');
+      // 如果 baseUrl 为空，确保账户列表也是空的
+      _accounts.clear();
+      _currentAccount = '';
+      notifyListeners(); // 通知UI，加载失败，账户列表为空
+    }
     debugPrint('API 配置已加载: $baseUrl, $apiKey'); // 调试信息
   }
 

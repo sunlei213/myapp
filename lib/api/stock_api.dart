@@ -1,6 +1,5 @@
 import 'package:myapp/models/account.dart';
 import 'package:myapp/models/trade_record.dart';
-import 'package:myapp/models/stock_info.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -28,12 +27,30 @@ class StockApi {
     _apiKey = newApiKey;
   }
 
+  Future<Account> fetchAccountInfo(String accountId) async {
+    final url = Uri.parse('$_baseUrl/account/$accountId');
+
+    final response = await http.get(url, headers: {'X-API-Key': _apiKey});
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      try {
+        return Account.fromJson(data);
+      } catch (e) {
+        throw Exception('获取错误信息: $e');
+      }
+    } else {
+      throw Exception('Failed to load account info');
+    }
+  }
+
+/*
   Future<Account?> fetchAccountInfo(String accountId) async {
     // Placeholder for fetching account info
     await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
     if (accountId == 'account1') {
       return Account(
-        id: 'account1',
+        userid: 536,
         name: 'Account One',
         balance: 100000.0,
         stocks: [
@@ -77,7 +94,7 @@ class StockApi {
     } else {
       return null;
     }
-  }
+  }*/
 
   Future<bool> submitTradeOrder(
       {required String accountId,

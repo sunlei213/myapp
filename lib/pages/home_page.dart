@@ -19,17 +19,26 @@ class _HomePageState extends State<HomePage> {
   String? _error; // 错误信息 (Error message)
   final UserService _userService = getIt<UserService>();
   late StockApi _stockApi; // 股票API实例 (Stock API instance)
-
-  // 可选账户列表 (List of available accounts)
-  final List<Map<String, String>> _accounts = [
-    {'id': 'account1', 'name': '账户一'},
-    {'id': 'account2', 'name': '账户二'},
-  ];
+  final List<Map<String, String>> _accounts = []; // 账户列表 (Account list)
 
   @override
   void initState() {
     super.initState();
     _stockApi = _userService.currentApi; // 获取当前API实例 (Get current API instance)
+    _onUserServiceChange();
+    // 监听 UserService 的变化
+    _userService.addListener(_onUserServiceChange);
+  }
+
+  @override
+  void dispose() {
+    _userService.removeListener(_onUserServiceChange);
+    super.dispose();
+  }
+
+  // UserService 变化时的回调 (Callback when UserService changes)
+  void _onUserServiceChange() {
+    // 当 UserService 中的数据发生变化时，更新UI
     setState(() {
       _accounts.clear(); // 初始数据 (Initial data)
       _accounts.addAll(_userService.accounts); // 初始数据 (Initial data)
@@ -52,14 +61,12 @@ class _HomePageState extends State<HomePage> {
       _error = null;
       _accountDetails = null; // 清除之前的详情 (Clear previous details)
     });
+    debugPrint(_selectedAccountId);
 
     try {
       final data = await _stockApi.fetchAccountInfo(_selectedAccountId!);
       setState(() {
         _accountDetails = data;
-        if (data == null) {
-          _error = '未能加载账户 $_selectedAccountId 的数据';
-        }
       });
     } catch (e) {
       setState(() {
@@ -74,6 +81,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    // 重新获取数据，确保显示最新状态
     return Scaffold(
       appBar: AppBar(
         title: const Text('账户信息查询'),
@@ -318,9 +326,10 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Text('参考持股: ${record.holdings.toString()} | 可用股份: ${record.available.toString()}'),
                 Text('成本价: ${record.costPrice.toStringAsFixed(3)} | 当前价: ${record.currentPrice.toStringAsFixed(3)}'),
-                Text('浮动盈亏: ${record.profitLoss.toStringAsFixed(2)}',
+                Text('浮动盈亏: ${record.profitLoss.toStringAsFixed(2)} | 浮动盈亏(%): ${record.profitLoss.toStringAsFixed(3)}',
                     style: TextStyle(
                         fontWeight: FontWeight.w500, color: record.profitLoss >= 0 ? Colors.redAccent : Colors.green)),
+                Text('冻结持股: ${record.holdings.toString()} | 在途股份: ${record.available.toString()}'),
               ],
             ),
             // isThreeLine: record.price > 0 && record.quantity > 0,

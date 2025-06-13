@@ -32,7 +32,13 @@ class _MainPageState extends State<MainPage> {
 
   Future<void> _loadSettings() async {
     await _userService.loadSettings(); // 确保加载设置完成
-    setState(() {}); // 刷新界面
+    if (_userService.accounts.isEmpty) {
+      // 如果没有账户，跳转到设置页面
+      setState(() {
+        _selectedIndex = 3; // 跳转到设置页面
+      });
+    }
+    // 此时不需要 setState，因为 UserService 是 ChangeNotifier，相关Widget会监听
   }
 
   @override
