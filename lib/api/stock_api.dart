@@ -40,7 +40,7 @@ class StockApi {
         throw Exception('获取错误信息: $e');
       }
     } else {
-      throw Exception('Failed to load account info');
+      throw Exception('获取账户信息失败: ${response.body}');
     }
   }
 
@@ -55,7 +55,7 @@ class StockApi {
     if (response.statusCode == 200) {
       return true;
     } else {
-      throw Exception('Failed to submit command');
+      throw Exception('错误的命令');
     }
   }
 
@@ -87,8 +87,12 @@ class StockApi {
   Future<List<TradeRecord>> fetchTradeHistory(
       {required String accountId, required String startDate, required String endDate}) async {
     // Placeholder for fetching trade history
-    final url = Uri.parse('$_baseUrl/trades/$accountId?start=$startDate&end=$endDate');
-    final response = await http.get(url,
+    final response = await http.get(
+      Uri.parse('$_baseUrl/trades/$accountId')
+          .replace(queryParameters: {
+          'start': startDate,
+          'end': endDate,
+          }),
         headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
         );
     if (response.statusCode == 200) {
@@ -119,6 +123,26 @@ class StockApi {
         return userList;
       } else {
         throw Exception('Failed to load account info');
+      }
+    } catch (e) {
+      throw Exception('获取错误信息: $e');
+    }
+  }
+
+  Future<List<Map<String, String>>> fetchLog() async {
+    final url = Uri.parse('$_baseUrl/place_order');
+    try {
+      final response = await http.get(url, headers: {'X-API-Key': _apiKey});
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        var list = data['return'] as List;
+        List<Map<String, String>> userList = list.map((i) {
+          return {'userid': i['stg'].toString(), 'time': i['start_time'].toString(), 'type': i['type'].toString(), 'msg': i['msg'].toString()};
+        }).toList();
+        return userList;
+      } else {
+        throw Exception('获取错误信息: ${response.body}');
       }
     } catch (e) {
       throw Exception('获取错误信息: $e');

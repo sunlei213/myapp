@@ -5,6 +5,7 @@ import 'package:myapp/pages/home_page.dart';
 import 'package:myapp/pages/trade_page.dart';
 import 'package:myapp/pages/history_page.dart';
 import 'package:myapp/pages/settings_page.dart';
+import 'package:myapp/pages/log_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -21,6 +22,7 @@ class _MainPageState extends State<MainPage> {
     const HomePage(),
     const TradePage(),
     const HistoryPage(),
+    const LogPage(),
     const SettingsPage(),
   ];
 
@@ -35,7 +37,7 @@ class _MainPageState extends State<MainPage> {
     if (_userService.accounts.isEmpty) {
       // 如果没有账户，跳转到设置页面
       setState(() {
-        _selectedIndex = 3; // 跳转到设置页面
+        _selectedIndex = 4; // 跳转到设置页面
       });
     }
     // 此时不需要 setState，因为 UserService 是 ChangeNotifier，相关Widget会监听
@@ -64,6 +66,10 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.history),
             label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.message),
+            label: 'Log',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
