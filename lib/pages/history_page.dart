@@ -1,118 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart'; // 用于日期格式化 (For date formatting)
-
-// 模拟账户数据 (Simulated account data)
-final List<Map<String, String>> _accounts = [
-  {'id': 'account1', 'name': '账户一 (0012345678)'},
-  {'id': 'account2', 'name': '账户二 (0087654321)'},
-];
-
-// 交易记录数据模型 (Transaction Record Data Model)
-class TransactionRecord {
-  final String id;
-  final DateTime dateTime;
-  final String type; // '买入', '卖出', '转入', '转出' (Buy, Sell, Transfer In, Transfer Out)
-  final String stockName;
-  final String stockCode;
-  final double price;
-  final int quantity;
-  final double amount; // 总金额 (Total amount)
-
-  TransactionRecord({
-    required this.id,
-    required this.dateTime,
-    required this.type,
-    required this.stockName,
-    required this.stockCode,
-    required this.price,
-    required this.quantity,
-    required this.amount,
-  });
-}
-
-// 模拟获取交易记录的函数 (Simulated function to fetch transaction records)
-Future<List<TransactionRecord>> fetchTransactionHistory(String accountId, DateTime startDate, DateTime endDate) async {
-  // 模拟网络延迟 (Simulate network delay)
-  await Future.delayed(const Duration(seconds: 2));
-
-  // 模拟基于日期过滤的数据 (Simulate data filtering based on date)
-  List<TransactionRecord> allRecords = [
-    TransactionRecord(
-        id: 'TXN001',
-        dateTime: DateTime(2024, 5, 1, 10, 30),
-        type: '买入',
-        stockName: '腾讯控股',
-        stockCode: '00700',
-        price: 350.50,
-        quantity: 100,
-        amount: 35050.00),
-    TransactionRecord(
-        id: 'TXN002',
-        dateTime: DateTime(2024, 5, 3, 14, 15),
-        type: '卖出',
-        stockName: '阿里巴巴',
-        stockCode: '09988',
-        price: 85.20,
-        quantity: 200,
-        amount: 17040.00),
-    TransactionRecord(
-        id: 'TXN003',
-        dateTime: DateTime(2024, 5, 5, 9, 45),
-        type: '买入',
-        stockName: '平安银行',
-        stockCode: '000001',
-        price: 12.80,
-        quantity: 500,
-        amount: 6400.00),
-    TransactionRecord(
-        id: 'TXN004',
-        dateTime: DateTime(2024, 5, 10, 11, 00),
-        type: '转入资金',
-        stockName: '-',
-        stockCode: '-',
-        price: 0,
-        quantity: 0,
-        amount: 50000.00),
-    TransactionRecord(
-        id: 'TXN005',
-        dateTime: DateTime(2024, 5, 12, 13, 20),
-        type: '买入',
-        stockName: '贵州茅台',
-        stockCode: '600519',
-        price: 1700.00,
-        quantity: 10,
-        amount: 17000.00),
-    TransactionRecord(
-        id: 'TXN006',
-        dateTime: DateTime(2024, 5, 15, 10, 55),
-        type: '卖出',
-        stockName: '腾讯控股',
-        stockCode: '00700',
-        price: 355.00,
-        quantity: 50,
-        amount: 17750.00),
-    TransactionRecord(
-        id: 'TXN007',
-        dateTime: DateTime(2023, 4, 1, 10, 30),
-        type: '买入',
-        stockName: '旧记录',
-        stockCode: 'OLD01',
-        price: 10.50,
-        quantity: 100,
-        amount: 1050.00),
-  ];
-
-  // 根据账户和日期范围筛选 (Filter by account and date range)
-  // 实际应用中，这些筛选应该在后端完成 (In a real app, this filtering should be done on the backend)
-  return allRecords.where((record) {
-    // 简单模拟账户ID对交易记录的影响，实际可能更复杂
-    // bool matchesAccount = accountId == 'account1' ? record.id.contains(RegExp(r'[13579]$')) : record.id.contains(RegExp(r'[02468]$'));
-    // 为了演示，这里不严格按 accountId 过滤，仅演示日期过滤
-    final recordDate = record.dateTime;
-    return !recordDate.isBefore(startDate) &&
-        !recordDate.isAfter(endDate.add(const Duration(days: 1)).subtract(const Duration(microseconds: 1))); // 包含结束日期当天
-  }).toList();
-}
+import 'package:myapp/api/stock_api.dart';
+import 'package:myapp/api/user_service.dart';
+import 'package:myapp/main.dart';
+import 'package:myapp/models/trade_record.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -122,16 +13,55 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  late StockApi _stockApi; // 股票API实例 (Stock API instance)
+  final UserService _userService = getIt<UserService>();
   String? _selectedAccountId;
   DateTime _startDate =
       DateTime.now().subtract(const Duration(days: 30)); // 默认开始日期：30天前 (Default start date: 30 days ago)
   DateTime _endDate = DateTime.now(); // 默认结束日期：今天 (Default end date: today)
+  final List<Map<String, String>> _accounts = []; // 账户列表 (Account list)
 
-  List<TransactionRecord> _transactionRecords = [];
+  List<TradeRecord> _transactionRecords = [];
   bool _isLoading = false;
   String? _error;
 
   final DateFormat _dateFormatter = DateFormat('yyyy-MM-dd'); // 日期格式化工具 (Date formatter)
+
+  @override
+  void initState() {
+    super.initState();
+    _stockApi = _userService.currentApi; // 获取当前API实例 (Get current API instance)
+    _onUserServiceChange();
+      // 监听 UserService 的变化
+    _userService.addListener(_onUserServiceChange);
+
+  }
+
+  @override
+  void dispose() {
+    _userService.removeListener(_onUserServiceChange);
+    super.dispose();
+  }
+
+  // UserService 变化时的回调 (Callback when UserService changes)
+  void _onUserServiceChange() {
+    // 当 UserService 中的数据发生变化时，更新UI
+    setState(() {
+      _accounts.clear(); // 初始数据 (Initial data)
+      _accounts.addAll(_userService.accounts); // 初始数据 (Initial data)
+      _selectedAccountId = _userService.currentAccount; // 初始数据 (Initial data)
+    });
+  }
+
+  Future<List<TradeRecord>> fetchTradeRecordHistory(String accountId, DateTime startDate, DateTime endDate) async {
+    // 根据账户和日期范围筛选 (Filter by account and date range)
+    // 实际应用中，这些筛选应该在后端完成 (In a real app, this filtering should be done on the backend)
+    final DateFormat dateFormatter = DateFormat('yyyyMMdd'); // 日期格式化工具 (Date formatter)
+    var startdate = dateFormatter.format(startDate);
+    var enddate = dateFormatter.format(endDate);
+    List<TradeRecord> records = await _stockApi.fetchTradeHistory(accountId: accountId, startDate: startdate, endDate: enddate);
+    return records;
+  }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
@@ -179,7 +109,7 @@ class _HistoryPageState extends State<HistoryPage> {
     });
 
     try {
-      final records = await fetchTransactionHistory(_selectedAccountId!, _startDate, _endDate);
+      final records = await fetchTradeRecordHistory(_selectedAccountId!, _startDate, _endDate);
       setState(() {
         _transactionRecords = records;
         if (records.isEmpty) {
@@ -329,16 +259,19 @@ class _HistoryPageState extends State<HistoryPage> {
                             size: 20,
                           ),
                         ),
-                        title: Text('${record.stockName} (${record.stockCode})',
+                        title: Text('${record.name} (${record.code}) | 市场：${record.market}',
                             style: const TextStyle(fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                                '类型: ${record.type} | 时间: ${_dateFormatter.format(record.dateTime)} ${DateFormat.Hm().format(record.dateTime)}'),
-                            if (record.price > 0 && record.quantity > 0)
-                              Text('价格: ${record.price.toStringAsFixed(2)} | 数量: ${record.quantity}'),
-                            Text('金额: ${record.amount.toStringAsFixed(2)}',
+                                '类型: ${record.type} | 时间: ${record.date} ${record.time}  | 状态: ${record.status}'),
+                            Text('委托价格: ${record.price.toStringAsFixed(2)} | 委托数量: ${record.volume}'),
+                            if (record.price1 > 0 && record.volume1 > 0)
+                              Text('成交价格: ${record.price1.toStringAsFixed(2)} | 成交数量: ${record.volume1}'),
+                            if (record.returnVol > 0)
+                              Text('撤单数量: ${record.returnVol}'),
+                            Text('成交金额: ${(record.price1 * record.volume1).toStringAsFixed(2)}',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w500,
                                     color: record.type.contains('买入') || record.type.contains('转出')
@@ -346,12 +279,12 @@ class _HistoryPageState extends State<HistoryPage> {
                                         : Colors.green)),
                           ],
                         ),
-                        isThreeLine: record.price > 0 && record.quantity > 0,
+                        //isThreeLine: record.price1 > 0 && record.volume1 > 0,
                         trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
                         onTap: () {
                           // 可以导航到交易详情页面 (Can navigate to transaction detail page)
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('点击了记录: ${record.id}')),
+                            SnackBar(content: Text('消息: ${record.msg}')),
                           );
                         },
                       ),

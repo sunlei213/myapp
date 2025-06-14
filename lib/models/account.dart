@@ -26,8 +26,6 @@ class Account {
   factory Account.fromJson(Map<String, dynamic> json) {
     var list = json['stocks'] as List;
     Map<String, dynamic> userMap = json['user'] as Map<String, dynamic>;
-    debugPrint(userMap.toString());
-    debugPrint(list.toString());
     List<StockInfo> stockList = list.map((i) => StockInfo.fromJson(i)).toList();
 
     return Account(

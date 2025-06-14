@@ -341,7 +341,7 @@ class _TradePageState extends State<TradePage> {
                         if (value == null || value.isEmpty) {
                           return '请输入委托价格';
                         }
-                        if (double.tryParse(value) == null || double.parse(value) <= 0) {
+                        if (double.tryParse(value) == null || double.parse(value) < 0) {
                           return '请输入有效的价格';
                         }
                       }
@@ -368,6 +368,9 @@ class _TradePageState extends State<TradePage> {
                       }
                       return null;
                     },
+                  ),
+                  Text('金额: ${((int.tryParse(_quantityController.text) ?? 0) * (double.tryParse(_priceController.text) ?? 0.0)).toStringAsFixed(2)}',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.deepPurple),
                   ),
                 if (_showPriceAndQuantityFields()) const SizedBox(height: 24),
 

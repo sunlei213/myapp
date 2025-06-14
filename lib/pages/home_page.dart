@@ -301,7 +301,7 @@ class _HomePageState extends State<HomePage> {
                 Text(
                   stock.profitLoss.toStringAsFixed(2),
                   style: TextStyle(
-                    color: stock.profitLoss >= 0
+                    color: stock.profitLoss < 0
                         ? Colors.green
                         : Colors.red, // 根据盈亏显示不同颜色 (Display different colors based on profit/loss)
                   ),

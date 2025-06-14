@@ -85,30 +85,24 @@ class StockApi {
   }
 
   Future<List<TradeRecord>> fetchTradeHistory(
-      {required String accountId, required DateTime startDate, required DateTime endDate}) async {
+      {required String accountId, required String startDate, required String endDate}) async {
     // Placeholder for fetching trade history
-    await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-    return [
-      // Dummy trade records
-      TradeRecord(
-          id: '1',
-          account: accountId,
-          code: 'AAPL',
-          name: 'Apple Inc.',
-          type: 'buy',
-          quantity: 10,
-          price: 160.0,
-          time: DateTime.now().subtract(const Duration(days: 1))),
-      TradeRecord(
-          id: '2',
-          account: accountId,
-          code: 'GOOG',
-          name: 'Alphabet Inc.',
-          type: 'sell',
-          quantity: 5,
-          price: 2550.0,
-          time: DateTime.now().subtract(const Duration(days: 2))),
-    ];
+    final url = Uri.parse('$_baseUrl/trades/$accountId?start=$startDate&end=$endDate');
+    final response = await http.get(url,
+        headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
+        );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      var list = data['trades'] as List;
+      try {
+        List<TradeRecord> tradeRecords = list.map((i) => TradeRecord.fromJson(i)).toList();
+        return tradeRecords;
+      } catch (e) {
+        throw Exception('获取错误信息: $e');
+      }
+    } else {
+      throw Exception('没有查询到记录');
+    }
   }
 
   Future<List<Map<String, String>>> fetchOption() async {
