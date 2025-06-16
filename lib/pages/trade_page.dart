@@ -8,8 +8,8 @@ enum TradeAction { buy, sell, cancel, query }
 
 // 模拟市场数据 (Simulated market data)
 final List<Map<String, String>> _markets = [
-  {'id': 'sh', 'name': '上海 (Shanghai)'},
-  {'id': 'sz', 'name': '深圳 (Shenzhen)'},
+  {'id': 'XSHG', 'name': '上海 (Shanghai)'},
+  {'id': 'XSHE', 'name': '深圳 (Shenzhen)'},
 ];
 
 class TradePage extends StatefulWidget {
@@ -336,6 +336,9 @@ class _TradePageState extends State<TradePage> {
                     decoration: _inputDecoration('委托价格', prefixIcon: Icons.attach_money),
                     keyboardType: const TextInputType.numberWithOptions(decimal: true),
                     textInputAction: TextInputAction.next,
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                     validator: (value) {
                       if (_showPriceAndQuantityFields()) {
                         if (value == null || value.isEmpty) {
@@ -357,6 +360,9 @@ class _TradePageState extends State<TradePage> {
                     decoration: _inputDecoration('委托数量', prefixIcon: Icons.format_list_numbered),
                     keyboardType: TextInputType.number,
                     textInputAction: TextInputAction.done, // 表单的最后一个输入 (Last input in the form)
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                     validator: (value) {
                       if (_showPriceAndQuantityFields()) {
                         if (value == null || value.isEmpty) {

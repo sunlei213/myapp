@@ -8,14 +8,14 @@ class Mydata with ChangeNotifier {
   String _url = '';
   String _apiKey = '';
 // Suggested code may be subject to a license. Learn more: ~LicenseLog:2797368052.
-  String _curaccount = '';
+
   List<String> _accountList = [];
 
   static const String _backendAddressKey = 'backendAddress';
   static const String _apiKeyKey = 'apiKey';
   static const String _accountInfoKey = 'accountList';
 
-  String get curaccount => _curaccount;
+
   String get apiKey => _apiKey;
   List<String> get accountList => _accountList;
   String get url => _url;

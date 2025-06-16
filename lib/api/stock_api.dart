@@ -97,7 +97,8 @@ class StockApi {
         );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      var list = data['trades'] as List;
+      var list = data['return'] as List;
+
       try {
         List<TradeRecord> tradeRecords = list.map((i) => TradeRecord.fromJson(i)).toList();
         return tradeRecords;
