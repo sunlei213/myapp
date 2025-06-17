@@ -266,9 +266,9 @@ class _HistoryPageState extends State<HistoryPage> {
                           children: [
                             Text(
                                 '类型: ${record.type} | 时间: ${record.date} ${record.time}  | 状态: ${record.status}'),
-                            Text('委托价格: ${record.price.toStringAsFixed(2)} | 委托数量: ${record.volume}'),
+                            Text('委托价格: ${record.price.toStringAsFixed(3)} | 委托数量: ${record.volume}'),
                             if (record.price1 > 0 && record.volume1 > 0)
-                              Text('成交价格: ${record.price1.toStringAsFixed(2)} | 成交数量: ${record.volume1}'),
+                              Text('成交价格: ${record.price1.toStringAsFixed(3)} | 成交数量: ${record.volume1}'),
                             if (record.returnVol > 0)
                               Text('撤单数量: ${record.returnVol}'),
                             Text('成交金额: ${(record.price1 * record.volume1).toStringAsFixed(2)}',
