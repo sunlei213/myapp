@@ -32,9 +32,8 @@ class _HistoryPageState extends State<HistoryPage> {
     super.initState();
     _stockApi = _userService.currentApi; // 获取当前API实例 (Get current API instance)
     _onUserServiceChange();
-      // 监听 UserService 的变化
+    // 监听 UserService 的变化
     _userService.addListener(_onUserServiceChange);
-
   }
 
   @override
@@ -59,7 +58,8 @@ class _HistoryPageState extends State<HistoryPage> {
     final DateFormat dateFormatter = DateFormat('yyyyMMdd'); // 日期格式化工具 (Date formatter)
     var startdate = dateFormatter.format(startDate);
     var enddate = dateFormatter.format(endDate);
-    List<TradeRecord> records = await _stockApi.fetchTradeHistory(accountId: accountId, startDate: startdate, endDate: enddate);
+    List<TradeRecord> records =
+        await _stockApi.fetchTradeHistory(accountId: accountId, startDate: startdate, endDate: enddate);
     return records;
   }
 
@@ -241,46 +241,31 @@ class _HistoryPageState extends State<HistoryPage> {
                       elevation: 1.5,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       child: ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: record.type.contains('买入') || record.type.contains('转入')
-                              ? Colors.red[100]
-                              : Colors.green[100],
-                          child: Icon(
-                            record.type.contains('买入')
-                                ? Icons.add_shopping_cart
-                                : record.type.contains('卖出')
-                                    ? Icons.remove_shopping_cart
-                                    : record.type.contains('转入')
-                                        ? Icons.arrow_downward
-                                        : Icons.arrow_upward,
-                            color: record.type.contains('买入') || record.type.contains('转入')
-                                ? Colors.red[700]
-                                : Colors.green[700],
-                            size: 20,
-                          ),
+                        leading: Icon(
+                          record.type.contains('买入') ? Icons.add_shopping_cart : Icons.remove_shopping_cart,
+                          color: record.type.contains('买入') ? Colors.red[700] : Colors.green[700],
+                          size: 20,
+                          //  ),
                         ),
                         title: Text('${record.name} (${record.code}) | 市场：${record.market}',
-                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                                '类型: ${record.type} | 时间: ${record.date} ${record.time}  | 状态: ${record.status}'),
+                            Text('时间: ${record.date} ${record.time}'),
+                            Text('类型: ${record.type} | 状态: ${record.status}'),
                             Text('委托价格: ${record.price.toStringAsFixed(3)} | 委托数量: ${record.volume}'),
                             if (record.price1 > 0 && record.volume1 > 0)
                               Text('成交价格: ${record.price1.toStringAsFixed(3)} | 成交数量: ${record.volume1}'),
-                            if (record.returnVol > 0)
-                              Text('撤单数量: ${record.returnVol}'),
+                            if (record.returnVol > 0) Text('撤单数量: ${record.returnVol}'),
                             Text('成交金额: ${(record.price1 * record.volume1).toStringAsFixed(2)}',
                                 style: TextStyle(
                                     fontWeight: FontWeight.w500,
-                                    color: record.type.contains('买入') || record.type.contains('转出')
-                                        ? Colors.redAccent
-                                        : Colors.green)),
+                                    color: record.type.contains('买入') ? Colors.redAccent : Colors.green)),
                           ],
                         ),
                         //isThreeLine: record.price1 > 0 && record.volume1 > 0,
-                        trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Colors.grey),
+                        trailing: const Icon(Icons.arrow_forward_ios, size: 10, color: Colors.grey),
                         onTap: () {
                           // 可以导航到交易详情页面 (Can navigate to transaction detail page)
                           ScaffoldMessenger.of(context).showSnackBar(

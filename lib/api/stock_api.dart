@@ -3,7 +3,6 @@ import 'package:myapp/models/trade_record.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
-
 class StockApi {
   // 2. 将变量改为私有，使用 _ 前缀
   String _baseUrl;
@@ -44,14 +43,11 @@ class StockApi {
     }
   }
 
-  Future<bool> submitCommand(
-      {required String accountId,
-      required String type}) async {
+  Future<bool> submitCommand({required String accountId, required String type}) async {
     // Placeholder for submitting trade order
     final url = Uri.parse('$_baseUrl/command/$accountId');
     final response = await http.post(url,
-        headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
-        body: jsonEncode({'type': type}));
+        headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'}, body: jsonEncode({'type': type}));
     if (response.statusCode == 200) {
       return true;
     } else {
@@ -70,13 +66,7 @@ class StockApi {
     final url = Uri.parse('$_baseUrl/place_order/$accountId');
     final response = await http.post(url,
         headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'code': stockCode,
-          'market': market,
-          'volume': volume,
-          'price': price,
-          'type': type
-        }));
+        body: jsonEncode({'code': stockCode, 'market': market, 'volume': volume, 'price': price, 'type': type}));
     if (response.statusCode == 200) {
       return true;
     } else {
@@ -88,13 +78,12 @@ class StockApi {
       {required String accountId, required String startDate, required String endDate}) async {
     // Placeholder for fetching trade history
     final response = await http.get(
-      Uri.parse('$_baseUrl/trades/$accountId')
-          .replace(queryParameters: {
-          'start': startDate,
-          'end': endDate,
-          }),
-        headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
-        );
+      Uri.parse('$_baseUrl/trades/$accountId').replace(queryParameters: {
+        'start': startDate,
+        'end': endDate,
+      }),
+      headers: {'X-API-Key': _apiKey, 'Content-Type': 'application/json'},
+    );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       var list = data['return'] as List;
@@ -139,9 +128,16 @@ class StockApi {
         final data = jsonDecode(response.body);
         var list = data['return'] as List;
         List<Map<String, String>> userList = list.map((i) {
-          return {'userid': i['stg'].toString(), 'time': i['start_time'].toString(), 'type': i['type'].toString(), 'msg': i['msg'].toString()};
+          return {
+            'userid': i['stg'].toString(),
+            'time': i['start_time'].toString(),
+            'type': i['type'].toString(),
+            'msg': i['msg'].toString()
+          };
         }).toList();
         return userList;
+      } else if (response.statusCode == 404) {
+        return [];
       } else {
         throw Exception('获取错误信息: ${response.body}');
       }

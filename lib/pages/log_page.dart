@@ -35,7 +35,7 @@ class _LogPageState extends State<LogPage> {
         logList = log;
       });
     } catch (e) {
-     setState(() {
+      setState(() {
         _error = '查询时发生错误: $e';
       });
     } finally {
@@ -126,7 +126,7 @@ class _LogPageState extends State<LogPage> {
                           ),
                           const Divider(), // 分割线 (Divider line)
                           //_buildStockTable(_accountDetails!.stocks),
-                           _buildLogCard(logList),
+                          _buildLogCard(logList),
                           const Divider(), // 分割线 (Divider line)
                           //_buildStockCard(_accountDetails!.stocks), // 股票卡片 (Stock card)
                         ],
@@ -140,9 +140,9 @@ class _LogPageState extends State<LogPage> {
                 child: Padding(
                   padding: EdgeInsets.all(20.0),
                   child: Text(
-                    '选择账户并点击“提交查询”以显示数据。',
+                    '暂无日志数据',
                     textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16, color: Colors.grey),
+                    style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
                 ),
               ),
@@ -151,6 +151,7 @@ class _LogPageState extends State<LogPage> {
       ),
     );
   }
+
   Widget _buildLogCard(List<Map<String, String>> logs) {
     if (logs.isEmpty) {
       return const Text('暂无日志数据');
@@ -179,7 +180,7 @@ class _LogPageState extends State<LogPage> {
             onTap: () {
               // 点击记录时导航到交易页面，并传递相关数据
               ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('消息: ${record['msg']}')),
+                SnackBar(content: Text('消息: ${record['msg']}')),
               );
             },
           ),
